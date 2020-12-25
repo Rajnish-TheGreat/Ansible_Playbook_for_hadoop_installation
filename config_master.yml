@@ -1,0 +1,60 @@
+- name: Configure Hadoop NameNode
+  hosts: namenode
+  tasks:
+  - name: Copy hadoop and java files
+    copy:
+      src: "{{item}}"
+      dest: /root/
+    loop: "{{package}}"
+
+ 
+  - name: Install Java
+    yum:
+      name: "/root/jdk-8u171-linux-x64.rpm"
+      state: present
+      disable_gpg_check: true
+
+  - name: Check hadoop installation
+    command: "rpm -q hadoop"
+    register: package_present
+    ignore_errors: True
+    changed_when: false
+
+
+  - name: Installing Hadoop
+    command: "rpm -i /root/hadoop.rpm --force"
+    when: package_present.failed == True
+
+
+  - name: Configure HDFS and Core file
+    template:
+      src: "{{item}}"
+      dest: "/etc/hadoop/"
+    loop: "{{ file_path}}"
+    register: conf_file
+
+  - name: Formatting directory
+    command: "hadoop namenode -format -nonInteractive"
+    register: dir_format
+    ignore_errors: true
+    changed_when: false
+
+  - name: Checking namenode status
+    shell: "jps | grep NameNode"
+    register: namenode_status
+    ignore_errors: True
+    changed_when: false
+
+  - name: Starting Namenode
+    command: "hadoop-daemon.sh start namenode"
+    when: namenode_status.failed == true
+
+  - name: Getting Namenode Details
+    command: "hadoop dfsadmin -report"
+    register: namenode_report
+    changed_when: false
+
+  - debug:
+      msg:  "{{namenode_report.stdout}}"
+  
+ 

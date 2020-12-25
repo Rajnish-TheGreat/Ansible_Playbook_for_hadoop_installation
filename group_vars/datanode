@@ -1,0 +1,5 @@
+
+    namenode_dir: /dn
+    node: data
+    namenode_ip: 172.31.47.39
+

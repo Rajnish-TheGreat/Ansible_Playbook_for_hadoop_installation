@@ -1,0 +1,4 @@
+
+    namenode_dir: /nn
+    node: name
+    namenode_ip: 0.0.0.0

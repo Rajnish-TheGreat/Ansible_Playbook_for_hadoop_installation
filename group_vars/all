@@ -1,0 +1,8 @@
+    package:
+    - files/hadoop.rpm
+    - files/jdk-8u171-linux-x64.rpm
+    namenode_port: 9090
+    file_path:
+    - files/hdfs-site.xml
+    - files/core-site.xml
+

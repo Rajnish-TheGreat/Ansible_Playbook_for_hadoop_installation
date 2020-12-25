@@ -1,0 +1,48 @@
+- name: Configure Hadoop DataNode
+  hosts: datanode
+
+
+  tasks:
+  - name: Copy hadoop and java files
+    copy:
+      src: "{{item}}"
+      dest: /root/
+    loop: "{{package}}"
+
+ 
+  - name: Install Java
+    yum:
+      name: "/root/jdk-8u171-linux-x64.rpm"
+      state: present
+      disable_gpg_check: true
+
+  - name: Check hadoop installation
+    command: "rpm -q hadoop"
+    register: package_present
+    ignore_errors: True
+    changed_when: false
+
+
+  - name: Installing Hadoop
+    command: "rpm -i /root/hadoop.rpm --force"
+    when: package_present.failed == True
+
+
+  - name: Configure HDFS and Core file
+    template:
+      src: "{{item}}"
+      dest: "/etc/hadoop/"
+    loop: "{{ file_path}}"
+    register: conf_file
+
+  - name: Checking datanode status
+    shell: "jps | grep DataNode"
+    register: datanode_status
+    ignore_errors: True
+    changed_when: false
+
+  - name: Starting Datanode
+    command: "hadoop-daemon.sh start datanode"
+    when: datanode_status.failed == true
+
+
